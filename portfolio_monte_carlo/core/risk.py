@@ -8,7 +8,7 @@ from portfolio_monte_carlo.core.returns import (
     annualized_volatility,
     cagr,
 )
-from portfolio_monte_carlo.core.scenario import Frequency
+from portfolio_monte_carlo.core.scenario import Frequency, periods_per_year
 
 
 def drawdown(values: pd.Series | np.ndarray) -> pd.Series:
@@ -34,6 +34,33 @@ def historical_cvar(returns: pd.Series, level: float = 0.05) -> float:
     return float(tail.mean()) if len(tail) else np.nan
 
 
+def sharpe_ratio(returns: pd.Series, frequency: Frequency, risk_free: float = 0.0) -> float:
+    ann_ret = annualized_return(returns, frequency)
+    ann_vol = annualized_volatility(returns, frequency)
+    if ann_vol == 0 or np.isnan(ann_vol):
+        return np.nan
+    return float((ann_ret - risk_free) / ann_vol)
+
+
+def sortino_ratio(returns: pd.Series, frequency: Frequency, risk_free: float = 0.0) -> float:
+    ann_ret = annualized_return(returns, frequency)
+    factor = periods_per_year(frequency)
+    downside = returns[returns < 0].std(ddof=1) * np.sqrt(factor)
+    if downside == 0 or np.isnan(downside):
+        return np.nan
+    return float((ann_ret - risk_free) / downside)
+
+
+def calmar_ratio(returns: pd.Series, frequency: Frequency) -> float:
+    clean = returns.dropna()
+    wealth = (1 + clean).cumprod()
+    md = max_drawdown(wealth)
+    if md == 0 or np.isnan(md):
+        return np.nan
+    ann_cagr = cagr(wealth, frequency)
+    return float(ann_cagr / abs(md))
+
+
 def return_statistics(returns: pd.DataFrame, frequency: Frequency) -> pd.DataFrame:
     rows: list[dict] = []
     for name, series in returns.items():
@@ -51,6 +78,9 @@ def return_statistics(returns: pd.DataFrame, frequency: Frequency) -> pd.DataFra
                 "kurtosis": clean.kurtosis(),
                 "historical_var_5": historical_var(clean, 0.05),
                 "historical_cvar_5": historical_cvar(clean, 0.05),
+                "sharpe_ratio": sharpe_ratio(clean, frequency),
+                "sortino_ratio": sortino_ratio(clean, frequency),
+                "calmar_ratio": calmar_ratio(clean, frequency),
                 "observations": len(clean),
             }
         )
@@ -68,7 +98,6 @@ def summarize_simulation(
     final_values = paths[:, -1]
     initial_values = paths[:, 0]
     contribution_final = total_contributions[:, -1]
-    real_deflator = (1 + annual_inflation) ** (paths.shape[1] - 1) ** 0
     years = (paths.shape[1] - 1) / {"daily": 252, "weekly": 52, "monthly": 12}[frequency]
     real_final = final_values / ((1 + annual_inflation) ** years)
     max_drawdowns = np.min(paths / np.maximum.accumulate(paths, axis=1) - 1, axis=1)

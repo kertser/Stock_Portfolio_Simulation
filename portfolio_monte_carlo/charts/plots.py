@@ -78,7 +78,7 @@ def fan_chart(
                 fillcolor=color,
                 line=dict(width=0),
                 name=f"{lower}-{upper}",
-            hovertemplate=f"{x_axis_title}: %{{x:.2f}}<br>{currency_symbol}%{{y:,.0f}}<extra>{lower}-{upper}</extra>",
+                hovertemplate=f"{x_axis_title}: %{{x:.2f}}<br>{value_label}: {currency_symbol}%{{y:,.0f}}<extra>{lower}-{upper}</extra>",
             )
         )
     fig.add_trace(
@@ -152,19 +152,6 @@ def rolling_chart(data: pd.DataFrame | pd.Series, title: str, yaxis_title: str) 
     return _finish(fig, yaxis_title)
 
 
-def correlation_heatmap(correlation: pd.DataFrame) -> go.Figure:
-    fig = px.imshow(
-        correlation,
-        text_auto=".2f",
-        color_continuous_scale="RdBu",
-        zmin=-1,
-        zmax=1,
-        title="Correlation Matrix",
-    )
-    fig.update_layout(coloraxis_colorbar=dict(title="Correlation"))
-    return _finish(fig)
-
-
 def model_comparison_bars(comparison: pd.DataFrame, currency_symbol: str = "$") -> go.Figure:
     cols = ["p5", "median_final_value", "p95"]
     tidy = comparison[cols].reset_index().melt(id_vars="model", var_name="metric", value_name="value")
@@ -201,3 +188,168 @@ def distribution_overlay(results: dict[str, dict], currency_symbol: str = "$") -
         barmode="overlay",
     )
     return _finish(fig, "Density")
+
+
+def income_waterfall(summary: dict[str, float], currency_symbol: str = "$", title: str = "Income and Tax Breakdown") -> go.Figure:
+    contributions = summary.get("total_contributions", 0)
+    net_profit = summary.get("median_net_profit_if_sold", summary.get("median_gain_over_contributions", 0))
+    net_dividends = summary.get("median_cumulative_net_dividends", 0)
+    dividend_tax = -summary.get("median_cumulative_dividend_taxes", 0)
+    capital_gains_tax = -summary.get("median_liquidation_tax", 0)
+    final_value = summary.get("median_final_value", 0)
+    fig = go.Figure(
+        go.Waterfall(
+            orientation="v",
+            measure=["absolute", "relative", "relative", "relative", "relative", "total"],
+            x=["Contributions", "Net profit", "Net dividends", "Dividend tax", "Capital gains tax", "Liquidation value"],
+            y=[contributions, net_profit, net_dividends, dividend_tax, capital_gains_tax, final_value],
+            connector={"line": {"color": GRID}},
+            increasing={"marker": {"color": ACCENT}},
+            decreasing={"marker": {"color": WARM}},
+            totals={"marker": {"color": "#6C8C5A"}},
+            hovertemplate=f"%{{x}}<br>{currency_symbol}%{{y:,.0f}}<extra></extra>",
+        )
+    )
+    fig.update_layout(title=title, showlegend=False, xaxis_title="")
+    return _finish(fig, f"Amount ({currency_symbol})")
+
+
+def target_probability_gauge(probability: float, title: str = "Target Probability") -> go.Figure:
+    fig = go.Figure(
+        go.Indicator(
+            mode="gauge+number",
+            value=probability * 100,
+            number={"suffix": "%", "font": {"size": 34, "color": INK}},
+            gauge={
+                "axis": {"range": [0, 100], "tickwidth": 1, "tickcolor": GRID},
+                "bar": {"color": ACCENT, "thickness": 0.22},
+                "bgcolor": "white",
+                "borderwidth": 0,
+                "steps": [
+                    {"range": [0, 35], "color": "rgba(199,119,45,0.18)"},
+                    {"range": [35, 70], "color": "rgba(242,180,44,0.18)"},
+                    {"range": [70, 100], "color": "rgba(23,107,135,0.16)"},
+                ],
+            },
+            title={"text": title, "font": {"size": 18, "color": INK}},
+        )
+    )
+    fig.update_layout(template="plotly_white", margin=dict(l=24, r=24, t=54, b=24), height=290)
+    return fig
+
+
+def correlation_heatmap(corr: pd.DataFrame, title: str = "Correlation Matrix") -> go.Figure:
+    labels = [str(c) for c in corr.columns]
+    z = corr.values
+    text = [[f"{v:.2f}" for v in row] for row in z]
+    fig = go.Figure(
+        go.Heatmap(
+            z=z,
+            x=labels,
+            y=labels,
+            colorscale=[[0, WARM], [0.5, "#f7f9f8"], [1, ACCENT]],
+            zmid=0,
+            zmin=-1,
+            zmax=1,
+            text=text,
+            texttemplate="%{text}",
+            textfont={"size": 13},
+            hovertemplate="<b>%{x}</b> vs <b>%{y}</b><br>Correlation: %{z:.3f}<extra></extra>",
+            showscale=True,
+        )
+    )
+    fig.update_layout(
+        title=title,
+        height=max(320, len(labels) * 80 + 80),
+    )
+    return _finish(fig)
+
+
+def contribution_growth_area(
+    paths: np.ndarray,
+    contributions: np.ndarray,
+    currency_symbol: str = "$",
+    x_values: np.ndarray | None = None,
+    x_axis_title: str = "Simulation period",
+) -> go.Figure:
+    x = _path_x(paths, x_values)
+    median_portfolio = np.percentile(paths, 50, axis=0)
+    median_contributions = np.percentile(contributions, 50, axis=0)
+    fig = go.Figure()
+    fig.add_trace(
+        go.Scatter(
+            x=x,
+            y=median_contributions,
+            name="Cumulative Contributions",
+            fill="tozeroy",
+            fillcolor="rgba(23, 107, 135, 0.30)",
+            line=dict(color=ACCENT, width=2),
+            hovertemplate=f"{x_axis_title}: %{{x:.2f}}<br>Contributions: {currency_symbol}%{{y:,.0f}}<extra>Contributions</extra>",
+        )
+    )
+    fig.add_trace(
+        go.Scatter(
+            x=x,
+            y=median_portfolio,
+            name="Median Portfolio Value",
+            fill="tonexty",
+            fillcolor="rgba(108, 140, 90, 0.30)",
+            line=dict(color="#4a7c59", width=2.5),
+            hovertemplate=f"{x_axis_title}: %{{x:.2f}}<br>Portfolio: {currency_symbol}%{{y:,.0f}}<extra>Portfolio</extra>",
+        )
+    )
+    fig.update_layout(title="Contributions vs Portfolio Growth (Median Path)", xaxis_title=x_axis_title)
+    return _finish(fig, f"Value ({currency_symbol})")
+
+
+def annual_returns_bar(returns_df: pd.DataFrame, title: str = "Annual Returns by Year") -> go.Figure:
+    """Bar chart of annual returns grouped by asset.  Positive bars are blue, negative are orange."""
+    df = returns_df.dropna(how="all")
+    annual = (1 + df).resample("YE").prod() - 1
+    _colors = [ACCENT, "#4a7c59", "#9b59b6", "#e74c3c", "#3498db"]
+    fig = go.Figure()
+    for i, col in enumerate(annual.columns):
+        base_rgb = _colors[i % len(_colors)]
+        y = annual[col] * 100
+        bar_colors = [WARM if v < 0 else base_rgb for v in y]
+        fig.add_trace(
+            go.Bar(
+                x=annual.index.year,
+                y=y,
+                name=str(col),
+                marker_color=bar_colors,
+                hovertemplate=(
+                    "<b>%{x}</b><br>Annual return: %{y:.1f}%%<extra>" + str(col) + "</extra>"
+                ),
+            )
+        )
+    fig.add_hline(y=0, line_color=MUTED, line_width=1, line_dash="dot")
+    fig.update_layout(
+        title=title,
+        barmode="group",
+        xaxis=dict(title="Year", tickmode="linear", dtick=1),
+    )
+    return _finish(fig, "Annual Return (%)")
+
+
+def returns_distribution(returns_df: pd.DataFrame, title: str = "Periodic Return Distribution") -> go.Figure:
+    """Overlapping histogram of periodic (monthly/weekly/daily) returns for each asset."""
+    _colors = [ACCENT, "#4a7c59", "#9b59b6", "#e74c3c", "#3498db"]
+    fig = go.Figure()
+    for i, col in enumerate(returns_df.dropna(how="all").columns):
+        data = returns_df[col].dropna() * 100
+        fig.add_trace(
+            go.Histogram(
+                x=data,
+                name=str(col),
+                opacity=0.68,
+                nbinsx=55,
+                marker_color=_colors[i % len(_colors)],
+                hovertemplate="Return: %{x:.2f}%<br>Count: %{y}<extra>" + str(col) + "</extra>",
+            )
+        )
+    fig.add_vline(x=0, line_color=MUTED, line_width=1.5, line_dash="dot",
+                  annotation_text="0%", annotation_position="top right",
+                  annotation_font_size=11, annotation_font_color=MUTED)
+    fig.update_layout(title=title, barmode="overlay")
+    return _finish(fig, "Frequency")

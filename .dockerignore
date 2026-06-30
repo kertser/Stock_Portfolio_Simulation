@@ -1,0 +1,51 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+.Python
+
+# Virtual environments
+.venv/
+venv/
+env/
+ENV/
+
+# Pytest / coverage
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Data cache (rebuilt at runtime)
+.cache/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+*.err.log
+
+# Streamlit config (not needed in Docker)
+.streamlit/
+
+# Git
+.git/
+.gitignore
+
+# Docker
+Dockerfile
+docker-compose.yml
+.dockerignore
+
+# Docs / markdown (optional — remove these lines to include them)
+# README.md
+# CODING_AGENT_SPEC.md

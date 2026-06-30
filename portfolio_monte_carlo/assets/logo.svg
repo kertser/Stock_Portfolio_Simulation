@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 36 36" width="36" height="36">
+  <!-- Background circle -->
+  <circle cx="18" cy="18" r="18" fill="#1a56db"/>
+  <!-- Monte Carlo fan chart lines (3 paths diverging from left) -->
+  <polyline points="5,26 12,20 18,15 30,10" fill="none" stroke="rgba(255,255,255,0.4)" stroke-width="1.8" stroke-linecap="round"/>
+  <polyline points="5,26 12,22 18,18 30,20" fill="none" stroke="rgba(255,255,255,0.7)" stroke-width="2" stroke-linecap="round"/>
+  <polyline points="5,26 12,25 18,24 30,30" fill="none" stroke="rgba(255,255,255,0.4)" stroke-width="1.8" stroke-linecap="round"/>
+  <!-- Median line highlighted -->
+  <polyline points="5,26 12,21 18,16 30,13" fill="none" stroke="#ffffff" stroke-width="2.5" stroke-linecap="round"/>
+  <!-- Start dot -->
+  <circle cx="5" cy="26" r="2.5" fill="#fff"/>
+</svg>

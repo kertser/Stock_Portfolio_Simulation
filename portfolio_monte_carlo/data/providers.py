@@ -46,7 +46,7 @@ def download_yfinance_prices(
     try:
         import yfinance as yf
     except ImportError as exc:
-        raise RuntimeError("yfinance is not installed. Install requirements.txt first.") from exc
+        raise RuntimeError("yfinance is not installed. Run `uv sync` first.") from exc
 
     clean_tickers = [ticker.strip().upper() for ticker in tickers if ticker.strip()]
     if not clean_tickers:

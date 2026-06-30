@@ -21,8 +21,8 @@ SimulationModel = Literal[
 
 @dataclass(slots=True)
 class Scenario:
-    tickers: list[str] = field(default_factory=lambda: ["SPY", "QQQ"])
-    weights: list[float] = field(default_factory=lambda: [0.7, 0.3])
+    tickers: list[str] = field(default_factory=lambda: ["^GSPC"])
+    weights: list[float] = field(default_factory=lambda: [1.0])
     start_date: str | None = None
     end_date: str | None = None
     lookback_years: int = 20
@@ -30,7 +30,7 @@ class Scenario:
     price_field: str = "Adj Close"
     currency: Currency = "ILS"
     initial_capital: float = 10_000.0
-    monthly_contribution: float = 500.0
+    monthly_contribution: float = 1_000.0
     annual_contribution_increase: float = 0.02
     horizon_years: float = 20.0
     simulations: int = 10_000

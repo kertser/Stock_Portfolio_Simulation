@@ -25,29 +25,64 @@ The user should be able to:
 
 Use Python 3.11+.
 
-Recommended stack:
+**Current stack (as of this version):**
 
-- Streamlit for the web interface.
+- **Dash 4.x** for the primary web interface (`dash_app.py`).
+- **dash-bootstrap-components** with FLATLY theme for layout and styling.
 - pandas and numpy for calculations.
-- scipy or statsmodels if needed.
-- Plotly for interactive charts.
+- scipy for statistical computations.
+- Plotly for interactive charts (all charts in `charts/plots.py`).
 - yfinance as the primary free market data provider.
+- Local disk cache for market data.
 - pytest for tests.
-- Local cache for market data.
+- Docker + Docker Compose for containerisation.
 
-Alternative libraries are acceptable if they improve quality, but the application must remain easy to run locally.
+The legacy Streamlit interface (`app.py`) is kept for reference but the Dash app is the primary interface. New UI work should target `dash_app.py`.
+
+Alternative libraries are acceptable if they improve quality, but the application must remain easy to run locally and via Docker.
 
 ## Architecture
 
-Keep the code modular. The UI must not contain core financial logic.
+Keep the code modular. **The UI must not contain core financial logic.**
 
-Recommended structure:
+All financial calculations live in `core/`. All chart building lives in `charts/plots.py`. The Dash app (`dash_app.py`) only assembles layout and wires callbacks; it imports from `core/` and `charts/`.
+
+Server-side state for large numpy arrays (simulation paths) is stored in a module-level `_CACHE` dict keyed by UUID. Only the UUID is stored in `dcc.Store` (browser). This keeps the browser payload small.
+
+**Current structure:**
 
 ```text
 portfolio_monte_carlo/
-  app.py
+  dash_app.py           ← primary Dash application
+  app.py                ← legacy Streamlit interface (kept for reference)
+  assets/
+    custom.css          ← Dash CSS overrides (auto-served by Dash)
   data/
-    providers.py
+    providers.py        ← yfinance download with cache
+    cache.py
+    validation.py
+  core/
+    returns.py          ← calculate_returns, rolling_returns, rolling_volatility, annualisation
+    portfolio.py        ← align_weights, portfolio_returns
+    contributions.py    ← contribution_schedule, inflation_indexed_basis_path
+    simulation.py       ← generate_return_paths, simulate_paths, run_simulation, compare_models
+    models.py           ← 5 MC models: historical_bootstrap, block_bootstrap, parametric_normal,
+                           fat_tail_student_t, regime_switching
+    risk.py             ← return_statistics (Sharpe/Sortino/Calmar included), summarize_simulation,
+                           drawdown, max_drawdown, historical_var/cvar
+    scenario.py         ← Scenario dataclass, serialisation, horizon_periods
+  charts/
+    plots.py            ← all Plotly figures: fan_chart, correlation_heatmap,
+                           contribution_growth_area, model_comparison_bars, etc.
+tests/
+  test_returns.py
+  test_risk.py
+  test_simulation.py
+Dockerfile
+docker-compose.yml
+pyproject.toml          ← project metadata and dependencies (uv)
+uv.lock                 ← pinned dependency lock file
+```
     cache.py
     validation.py
   core/
@@ -412,12 +447,28 @@ The good version is ready when:
 - correlations are preserved correctly;
 - historical bootstrap, block bootstrap, normal, and fat-tail models exist;
 - full model comparison mode exists;
-- the UI is clean and polished;
-- caching exists;
-- export exists;
-- README exists;
-- basic tests exist;
-- code is modular and extensible.
+- the UI is clean and polished (Dash + DBC, fintech dashboard layout);
+- caching exists (local disk cache for market data; server-side cache for simulation arrays);
+- export exists (CSV, JSON, paths, cashflows);
+- README exists and covers Docker;
+- basic tests exist (16+ passing);
+- code is modular and extensible;
+- Sharpe, Sortino, and Calmar ratios are shown in historical statistics;
+- correlation heatmap chart is shown in the data tab;
+- contribution-vs-growth area chart is shown in the simulation tab;
+- the application can be built and run with `docker compose up --build`.
+
+## Containerisation
+
+The application ships with a production-ready `Dockerfile` and `docker-compose.yml`.
+
+Requirements:
+- Multi-stage build: builder stage installs deps, runtime stage copies only installed packages.
+- Non-root user inside the container.
+- Health check against `/_dash-layout`.
+- `PORT` and `HOST` configurable via environment variables.
+- A named Docker volume persists the yfinance data cache.
+- The image exposes port 8050.
 
 ## Product Philosophy
 

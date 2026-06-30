@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 108" preserveAspectRatio="xMidYMid slice">
+  <defs>
+    <!-- Background gradient -->
+    <linearGradient id="bg" x1="0" y1="0" x2="1920" y2="0" gradientUnits="userSpaceOnUse">
+      <stop offset="0%"   stop-color="#040c18"/>
+      <stop offset="30%"  stop-color="#071422"/>
+      <stop offset="70%"  stop-color="#0a1b30"/>
+      <stop offset="100%" stop-color="#050d1c"/>
+    </linearGradient>
+    <!-- Glow at focal origin (bottom-left) -->
+    <radialGradient id="glow" cx="180" cy="100" r="160" gradientUnits="userSpaceOnUse">
+      <stop offset="0%"   stop-color="#1a56db" stop-opacity="0.28"/>
+      <stop offset="100%" stop-color="#1a56db" stop-opacity="0"/>
+    </radialGradient>
+    <!-- Right shimmer -->
+    <radialGradient id="shimmer" cx="1750" cy="30" r="220" gradientUnits="userSpaceOnUse">
+      <stop offset="0%"   stop-color="#0ea5e9" stop-opacity="0.08"/>
+      <stop offset="100%" stop-color="#0ea5e9" stop-opacity="0"/>
+    </radialGradient>
+    <!-- Fade mask: dissolve at left and right edges -->
+    <linearGradient id="fmask" x1="0" y1="0" x2="1920" y2="0" gradientUnits="userSpaceOnUse">
+      <stop offset="0%"   stop-color="white" stop-opacity="0"/>
+      <stop offset="8%"   stop-color="white" stop-opacity="1"/>
+      <stop offset="88%"  stop-color="white" stop-opacity="1"/>
+      <stop offset="100%" stop-color="white" stop-opacity="0"/>
+    </linearGradient>
+    <mask id="fm"><rect width="1920" height="108" fill="url(#fmask)"/></mask>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1920" height="108" fill="url(#bg)"/>
+  <ellipse cx="180"  cy="100" rx="220" ry="80"  fill="url(#glow)"/>
+  <ellipse cx="1750" cy="30"  rx="260" ry="90"  fill="url(#shimmer)"/>
+
+  <!-- Subtle time markers -->
+  <line x1="560"  y1="0" x2="560"  y2="108" stroke="rgba(255,255,255,0.03)" stroke-width="1"/>
+  <line x1="1050" y1="0" x2="1050" y2="108" stroke="rgba(255,255,255,0.025)" stroke-width="1"/>
+  <line x1="1540" y1="0" x2="1540" y2="108" stroke="rgba(255,255,255,0.02)" stroke-width="1"/>
+
+  <!--
+    Fan chart: focal point = (180, 100) — bottom-left corner
+    Paths spread upward to the right: y_end ranges from 5 (best) to 100 (flat/worst)
+    Formula: M180,100 C CP1 CP2 1900,y_end
+      CP1 = (550, 100 - delta*0.05)
+      CP2 = (1300, 100 - delta*0.60)
+      delta = 100 - y_end  (how far up the path goes)
+  -->
+  <g mask="url(#fm)">
+
+    <!-- Confidence bands -->
+    <!-- p10-p90 outer: i=3 (y=14) to i=29 (y=92) -->
+    <path d="M180,100 C550,99.3 1300,91.6 1900,14 L1900,92 C1300,56.8 550,100.4 180,100 Z"
+          fill="rgba(99,102,241,0.06)"/>
+    <!-- p25-p75 inner: i=9 (y=30) to i=23 (y=76) -->
+    <path d="M180,100 C550,99.7 1300,82 1900,30 L1900,76 C1300,54.4 550,100.3 180,100 Z"
+          fill="rgba(99,102,241,0.10)"/>
+
+    <!-- i=0  y=5   delta=95: C550,95.3 1300,43 1900,5   --> emerald -->
+    <path d="M180,100 C550,95.3 1300,43   1900,5"   stroke="rgba(52,211,153,0.17)"  stroke-width="0.65" fill="none"/>
+    <!-- i=1  y=8   delta=92 -->
+    <path d="M180,100 C550,95.4 1300,44.8 1900,8"   stroke="rgba(52,211,153,0.20)"  stroke-width="0.65" fill="none"/>
+    <!-- i=2  y=11  delta=89 -->
+    <path d="M180,100 C550,95.6 1300,46.6 1900,11"  stroke="rgba(52,211,153,0.23)"  stroke-width="0.70" fill="none"/>
+    <!-- i=3  y=14  delta=86 -->
+    <path d="M180,100 C550,95.7 1300,48.4 1900,14"  stroke="rgba(52,211,153,0.27)"  stroke-width="0.70" fill="none"/>
+    <!-- i=4  y=17  delta=83 -->
+    <path d="M180,100 C550,95.9 1300,50.2 1900,17"  stroke="rgba(110,231,183,0.30)" stroke-width="0.75" fill="none"/>
+    <!-- i=5  y=20  delta=80 -->
+    <path d="M180,100 C550,96   1300,52   1900,20"  stroke="rgba(110,231,183,0.33)" stroke-width="0.75" fill="none"/>
+    <!-- i=6  y=23  delta=77 -->
+    <path d="M180,100 C550,96.2 1300,53.8 1900,23"  stroke="rgba(147,197,253,0.35)" stroke-width="0.80" fill="none"/>
+    <!-- i=7  y=26  delta=74 -->
+    <path d="M180,100 C550,96.3 1300,55.6 1900,26"  stroke="rgba(147,197,253,0.38)" stroke-width="0.80" fill="none"/>
+    <!-- i=8  y=28  delta=72 -->
+    <path d="M180,100 C550,96.4 1300,56.8 1900,28"  stroke="rgba(147,197,253,0.40)" stroke-width="0.85" fill="none"/>
+    <!-- i=9  y=30  delta=70: p25 line -->
+    <path d="M180,100 C550,96.5 1300,58   1900,30"  stroke="rgba(186,230,253,0.43)" stroke-width="0.85" fill="none"/>
+    <!-- i=10 y=33  delta=67 -->
+    <path d="M180,100 C550,96.7 1300,59.8 1900,33"  stroke="rgba(186,230,253,0.46)" stroke-width="0.90" fill="none"/>
+    <!-- i=11 y=36  delta=64 -->
+    <path d="M180,100 C550,96.8 1300,61.6 1900,36"  stroke="rgba(186,230,253,0.49)" stroke-width="0.90" fill="none"/>
+    <!-- i=12 y=39  delta=61 -->
+    <path d="M180,100 C550,96.9 1300,63.4 1900,39"  stroke="rgba(224,242,254,0.52)" stroke-width="0.95" fill="none"/>
+    <!-- i=13 y=42  delta=58 -->
+    <path d="M180,100 C550,97.1 1300,65.2 1900,42"  stroke="rgba(224,242,254,0.55)" stroke-width="0.95" fill="none"/>
+    <!-- i=14 y=45  delta=55 -->
+    <path d="M180,100 C550,97.3 1300,67   1900,45"  stroke="rgba(255,255,255,0.52)" stroke-width="1.00" fill="none"/>
+    <!-- i=15 y=48  delta=52 -->
+    <path d="M180,100 C550,97.4 1300,68.8 1900,48"  stroke="rgba(255,255,255,0.46)" stroke-width="1.00" fill="none"/>
+    <!-- i=16 y=51  delta=49 -->
+    <path d="M180,100 C550,97.6 1300,70.6 1900,51"  stroke="rgba(255,255,255,0.40)" stroke-width="0.95" fill="none"/>
+    <!-- i=17 y=54  delta=46 — near-median, subtle -->
+    <path d="M180,100 C550,97.7 1300,72.4 1900,54"  stroke="rgba(255,255,255,0.34)" stroke-width="0.90" fill="none"/>
+    <!-- i=18 y=57  delta=43 -->
+    <path d="M180,100 C550,97.8 1300,74.2 1900,57"  stroke="rgba(253,230,138,0.40)" stroke-width="0.90" fill="none"/>
+    <!-- i=19 y=60  delta=40 -->
+    <path d="M180,100 C550,98   1300,76   1900,60"  stroke="rgba(253,230,138,0.37)" stroke-width="0.85" fill="none"/>
+    <!-- i=20 y=63  delta=37 -->
+    <path d="M180,100 C550,98.2 1300,77.8 1900,63"  stroke="rgba(252,165,0,0.34)"   stroke-width="0.85" fill="none"/>
+    <!-- i=21 y=66  delta=34 -->
+    <path d="M180,100 C550,98.3 1300,79.6 1900,66"  stroke="rgba(252,165,0,0.31)"   stroke-width="0.80" fill="none"/>
+    <!-- i=22 y=69  delta=31 -->
+    <path d="M180,100 C550,98.5 1300,81.4 1900,69"  stroke="rgba(249,115,22,0.29)"  stroke-width="0.80" fill="none"/>
+    <!-- i=23 y=72  delta=28 -->
+    <path d="M180,100 C550,98.6 1300,83.2 1900,72"  stroke="rgba(249,115,22,0.26)"  stroke-width="0.75" fill="none"/>
+    <!-- i=24 y=76  delta=24 -->
+    <path d="M180,100 C550,98.8 1300,85.6 1900,76"  stroke="rgba(239,68,68,0.24)"   stroke-width="0.75" fill="none"/>
+    <!-- i=25 y=80  delta=20 -->
+    <path d="M180,100 C550,99   1300,88   1900,80"  stroke="rgba(239,68,68,0.21)"   stroke-width="0.70" fill="none"/>
+    <!-- i=26 y=84  delta=16 -->
+    <path d="M180,100 C550,99.2 1300,90.4 1900,84"  stroke="rgba(220,38,38,0.18)"   stroke-width="0.70" fill="none"/>
+    <!-- i=27 y=88  delta=12 -->
+    <path d="M180,100 C550,99.4 1300,92.8 1900,88"  stroke="rgba(220,38,38,0.15)"   stroke-width="0.65" fill="none"/>
+    <!-- i=28 y=92  delta=8 -->
+    <path d="M180,100 C550,99.6 1300,95.2 1900,92"  stroke="rgba(185,28,28,0.12)"   stroke-width="0.65" fill="none"/>
+    <!-- i=29 y=96  delta=4 -->
+    <path d="M180,100 C550,99.8 1300,97.6 1900,96"  stroke="rgba(185,28,28,0.09)"   stroke-width="0.60" fill="none"/>
+
+  </g>
+
+  <!-- Focal origin dot (bottom-left) -->
+  <circle cx="180" cy="100" r="2.5" fill="rgba(255,255,255,0.55)"/>
+  <circle cx="180" cy="100" r="5.5" fill="none" stroke="rgba(255,255,255,0.18)" stroke-width="1"/>
+
+</svg>

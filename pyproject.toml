@@ -1,3 +1,39 @@
+[project]
+name = "portfolio-monte-carlo"
+version = "0.1.0"
+description = "Portfolio Monte Carlo Simulator — multi-model stochastic projection with Dash UI"
+requires-python = ">=3.11"
+dependencies = [
+    "dash>=4.0",
+    "dash-bootstrap-components>=2.0",
+    "numpy>=1.26",
+    "pandas>=2.2",
+    "plotly>=5.22",
+    "pyarrow>=16.0",
+    "scipy>=1.12",
+    "yfinance>=0.2.40",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.2",
+]
+
+[project.scripts]
+monte-carlo = "portfolio_monte_carlo.dash_app:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["portfolio_monte_carlo"]
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 pythonpath = ["."]
+
+[tool.uv]
+dev-dependencies = [
+    "pytest>=8.2",
+]
