@@ -1,6 +1,6 @@
 # Portfolio Monte Carlo Simulator
 
-Portfolio Monte Carlo Simulator is a local Python web application for scenario-based portfolio accumulation analysis. It downloads historical market data, estimates return statistics, runs Monte Carlo simulations under several models, projects contribution-driven accumulation paths, and reports risk metrics and target probabilities.
+Portfolio Monte Carlo Simulator is a local Python web application for scenario-based portfolio accumulation analysis. It downloads historical market data, estimates return statistics, runs Monte Carlo simulations, and compares how different model assumptions change the distribution of possible outcomes.
 
 It is not a market prediction tool and it is not financial advice.
 
@@ -19,7 +19,7 @@ It is not a market prediction tool and it is not financial advice.
   - Fat-tail Student-t
   - Regime approximation
 - Model comparison mode: same scenario through all selected models side by side.
-- Charts: fan chart, contribution-vs-growth area, final value histogram, random trajectories, income waterfall, target probability gauge, rolling returns/volatility, drawdown distribution, correlation heatmap.
+- Charts: fan chart, contribution-vs-growth area, final value histogram, random trajectories, income waterfall, target probability gauge, rolling returns/volatility, drawdown distribution, correlation heatmap, model comparison bars, distribution overlay.
 - CSV and JSON export of results, paths, cashflows, and scenario configuration.
 - Import saved scenarios from JSON.
 
@@ -175,7 +175,7 @@ uv run pytest
 
 Different simulation models can produce materially different outcomes. This does not mean one model is objectively correct. It shows that long-term projections are highly assumption-dependent.
 
-The comparison tab runs the same portfolio, contribution schedule, target, horizon, and fee assumptions through selected models, then compares downside percentiles, median outcomes, target probabilities, drawdowns, and Sharpe/Sortino/Calmar. Wide dispersion across models is itself a useful risk signal.
+The comparison tab runs the same portfolio, contribution schedule, target, horizon, and fee assumptions through selected models, then compares downside percentiles, median outcomes, target probability, drawdowns, and worst-tail outcomes.
 
 ## Data Sources
 
