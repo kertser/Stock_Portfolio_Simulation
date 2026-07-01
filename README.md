@@ -85,6 +85,75 @@ To stop:
 docker compose down
 ```
 
+## Production deployment
+
+Production runs behind the shared Caddy reverse proxy from
+[`kertser/proxy`](https://github.com/kertser/proxy). HTTPS termination, Let's
+Encrypt certificate management, and host ports 80/443 are all owned by that
+external proxy — **this stack must not publish port 8050 on the host**.
+
+The `docker-compose.prod.yml` overlay:
+
+- Overrides the base `ports` mapping with `!override []` to remove the host
+  binding.
+- Attaches the `portfolio-mc` container to the external `web` Docker network
+  so Caddy can reach it by container name.
+
+### Prerequisites
+
+1. The proxy stack from `kertser/proxy` is already running on the host and
+   the external `web` Docker network exists:
+
+   ```bash
+   docker network ls | grep web            # should show a network named "web"
+   # or, one-time:
+   docker network create web
+   ```
+
+2. DNS `A` record for `spf.alpha-numerical.com` points to the host's public IP.
+
+3. A site block for `spf.alpha-numerical.com` is present in
+   [`kertser/proxy` Caddyfile](https://github.com/kertser/proxy/blob/main/Caddyfile)
+   pointing at `portfolio-mc:8050`.
+
+### Deploy
+
+```bash
+git clone https://github.com/kertser/Stock_Portfolio_Simulation.git ~/SPF
+cd ~/SPF
+docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --build
+```
+
+Verify:
+
+```bash
+docker ps --format 'table {{.Names}}\t{{.Networks}}\t{{.Status}}' | grep portfolio-mc
+# Expected: portfolio-mc  spf_default,web  Up ... (healthy)
+
+# From inside the proxy container, Caddy should be able to reach the app
+docker exec proxy-caddy wget -qO- --timeout=3 http://portfolio-mc:8050/_dash-layout | head -c 60
+
+# HTTPS from the outside
+curl -I https://spf.alpha-numerical.com
+# Expected: HTTP/2 200
+```
+
+### Update
+
+```bash
+cd ~/SPF
+git pull
+docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --build
+```
+
+If Caddy still serves a stale config after updating the `kertser/proxy`
+Caddyfile, restart the proxy container (bind-mounted files can hit inode
+caching after a `git pull` rename):
+
+```bash
+docker restart proxy-caddy
+```
+
 ## Test
 
 ```bash
@@ -154,5 +223,5 @@ pyproject.toml          ← project metadata and dependencies (uv)
 uv.lock                 ← pinned dependency lock file
 Dockerfile
 docker-compose.yml
+docker-compose.prod.yml ← production overlay for kertser/proxy
 ```
-
