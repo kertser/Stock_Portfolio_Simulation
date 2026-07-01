@@ -1,0 +1,33 @@
+# Production overlay for SPF (Stock Portfolio Simulation).
+#
+# The public HTTPS termination is handled by the shared Caddy proxy at
+# kertser/proxy (deployed from ~/proxy on the host). Caddy owns ports 80/443
+# and reverse-proxies spf.alpha-numerical.com to the `portfolio-mc` container
+# over the external Docker network "web".
+#
+# This overlay:
+#   - Removes the host port publication (:8050) — the app is only reachable
+#     through the proxy, never directly on the internet.
+#   - Attaches the app to the external "web" network so Caddy can resolve
+#     `portfolio-mc` by name.
+#
+# Prerequisites:
+#   1. The `web` network exists on the host:
+#        docker network create web
+#   2. The proxy stack from kertser/proxy is running.
+#
+# Usage:
+#   docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --build
+
+services:
+  app:
+    # Empty list replaces (does not append to) the base ports mapping,
+    # so :8050 is no longer bound on the host.
+    ports: !override []
+    networks:
+      - default
+      - web
+
+networks:
+  web:
+    external: true
