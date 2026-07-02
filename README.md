@@ -1,8 +1,6 @@
 # Portfolio Monte Carlo Simulator
 
-Portfolio Monte Carlo Simulator is a local Python web application for scenario-based portfolio accumulation analysis. It downloads historical market data, estimates return statistics, runs Monte Carlo simulations, and compares how different model assumptions change the distribution of possible outcomes.
-
-It is not a market prediction tool and it is not financial advice.
+Portfolio Monte Carlo Simulator is a web application for scenario-based portfolio accumulation analysis. It downloads historical market data, estimates return statistics, runs Monte Carlo simulations, and compares how different model assumptions change the distribution of possible outcomes.
 
 ## Features
 
